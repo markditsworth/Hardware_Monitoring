@@ -1,0 +1,41 @@
+#!/usr/bin/python3
+
+import serial
+import elasticsearch
+import json
+import datetime
+import argparse
+
+def index_to_es(es, index_name, doc):
+	try:
+		json_data = json.loads(data)
+		json_data['timestamp'] = datetime.now()
+		res = es.index(index=index_name, body=doc)
+	except:
+		print("Failed to index '{}'".format(doc)
+	
+
+def main(port, baud, es, index_name):
+	with(serial.Serial(port,baud) as mcu_uart:
+		while True:
+			try:
+				data = mcu_uart.readline().decode('utf-8').strip()
+				index_to_es(data)
+			except UnicodeDecodeError:
+				print("Unicode Decode Error on")
+				print(data)
+
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Process some integers.')
+	parser.add_argument('--baud', type=int, default=9600,
+                    help='baud rate')
+	parser.add_argument('--dev', type=str,
+                    default='/dev/ttyACM0',
+                    help='USB location (default /dev/ttyACM0')
+	parser.add_argument(--index, type=str, default='msp432_index', help='name of elasticsearch index')
+	parser.add_argument(--host, type=str default='localhost:9200', help='elasticsearch host')
+
+	args = parser.parse_args()
+
+	main(dev, baud, host, index)
+	
