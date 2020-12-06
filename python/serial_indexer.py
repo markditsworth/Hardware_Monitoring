@@ -7,11 +7,12 @@ import argparse
 
 from datetime import datetime
 
-def index_to_es(es, index_name, doc):
+def index_to_es(es, index_name, doc, debug=False):
         try:
                 json_data = json.loads(doc)
                 json_data['@timestamp'] = datetime.utcnow()
-                print(json_data)
+                if debug:
+                    print(json_data)
                 res = es.index(index_name, json_data)
         except Exception as e:
                 print("Failed to index '{}'".format(doc))
@@ -19,13 +20,14 @@ def index_to_es(es, index_name, doc):
                 print(e)
         
 
-def run(port, baud, host, index_name):
+def run(port, baud, host, index_name, debug=False):
         es = elasticsearch.Elasticsearch(host)
         with(serial.Serial(port,baud)) as mcu_uart:
                 while True:
                         try:
                                 data = mcu_uart.readline().decode('utf-8').strip()
-                                print(data)
+                                if debug:
+                                    print(data)
                                 index_to_es(es, index_name, data)
                         except UnicodeDecodeError:
                                 print("Unicode Decode Error on")
@@ -40,8 +42,8 @@ if __name__ == '__main__':
                     help='USB location (default /dev/ttyACM0')
         parser.add_argument('--index', type=str, default='timeseries', help='name of elasticsearch index')
         parser.add_argument('--host', type=str, default='localhost:9200', help='elasticsearch host')
-
+        parser.add_argyment('--debug', action='store_true')
         args = parser.parse_args()
 
-        run(args.dev, args.baud, args.host, args.index)
+        run(args.dev, args.baud, args.host, args.index, debug=args.debug)
         
